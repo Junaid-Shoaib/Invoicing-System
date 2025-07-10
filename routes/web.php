@@ -25,7 +25,8 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('admin/home', [HomeController::class, 'adminHome'])->name('admin.home')->middleware('is_admin');
-
+Route::get('invoices/export/excel', [InvoiceController::class, 'exportExcel'])->name('invoices.export.excel');
+Route::get('/invoices/export-pdf', [InvoiceController::class, 'exportPdf'])->name('invoices.exportPdf');
 Route::resource('customers', CustomerController::class)->middleware('auth');
 Route::resource('items', ItemController::class)->middleware('auth');;
 Route::resource('invoices', InvoiceController::class)->middleware('auth');;

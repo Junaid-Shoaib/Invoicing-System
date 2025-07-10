@@ -17,6 +17,7 @@
                             <thead>
                                 <tr>
                                     <th>ID</th>
+                                    <th>H.S. Code</th>
                                     <th>Name</th>
                                     <th>Unit</th>
                                     <th>Price</th>
@@ -42,6 +43,7 @@
             ajax: '{{ route('items.index') }}',
             columns: [
                 { data: 'id', name: 'id' },
+                { data: 'hs_code', name: 'hs_code' },
                 { data: 'name', name: 'name' },
                 { data: 'unit', name: 'unit' },
                 { data: 'unit_price', name: 'unit_price' },

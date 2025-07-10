@@ -9,6 +9,7 @@ class Item extends Model
     use HasFactory;
 
     protected $fillable = [
+        'hs_code',
         'name',
         'unit',
         'description',

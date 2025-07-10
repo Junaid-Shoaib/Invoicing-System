@@ -57,6 +57,7 @@ class ItemController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'hs_code' => 'required',
             'name' => 'required',
             'unit' => 'required',
             'description' => 'nullable',
@@ -78,6 +79,7 @@ class ItemController extends Controller
     public function update(Request $request, Item $item)
     {
         $request->validate([
+            'hs_code' => 'required',
             'name' => 'required',
             'unit' => 'required',
             'description' => 'nullable',

@@ -1,4 +1,8 @@
 <div class="mb-3">
+    <label>H.S. CODE *</label>
+    <input type="text" name="hs_code" class="form-control" value="{{ old('hs_code', $item->hs_code ?? '') }}" required>
+</div>
+<div class="mb-3">
     <label>Name *</label>
     <input type="text" name="name" class="form-control" value="{{ old('name', $item->name ?? '') }}" required>
 </div>
@@ -20,5 +24,5 @@
 </div>
 <div class="mb-3">
     <label>Sales Tax Rate (%) *</label>
-    <input type="number" name="st_rate" step="0.01" class="form-control" value="{{ old('st_rate', $item->st_rate ?? '') }}" required>
+    <input type="number" name="st_rate" step="0.01" class="form-control" value="{{ old('st_rate', $item->st_rate ?? 18) }}" required>
 </div>

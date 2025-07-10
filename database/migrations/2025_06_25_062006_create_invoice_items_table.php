@@ -22,6 +22,7 @@ class CreateInvoiceItemsTable extends Migration
             $table->decimal('value_of_goods', 12, 2);
             $table->decimal('sale_tax_rate', 5, 2)->nullable();
             $table->decimal('amount_of_saleTax', 12, 2)->nullable();
+            $table->decimal('extra_tax', 12, 2)->nullable();
             $table->decimal('further_tax', 12, 2)->nullable();
             $table->decimal('total', 12, 2);
             $table->timestamps();

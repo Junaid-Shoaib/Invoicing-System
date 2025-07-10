@@ -16,6 +16,7 @@ class InvoiceItem extends Model
         'value_of_goods',
         'sale_tax_rate',
         'amount_of_saleTax',
+        'extra_tax',
         'further_tax',
         'total',
     ];

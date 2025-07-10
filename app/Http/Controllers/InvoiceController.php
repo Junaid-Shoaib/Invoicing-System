@@ -7,15 +7,31 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use App\Models\InvoiceItem;
 use App\Models\Item;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\InvoicesExport;
 use PDF;
 
 class InvoiceController extends Controller
 {
+
     public function index(Request $request)
     {
+
+        $query = Invoice::with('customer');
+
+        if ($request->filled('customer_id')) {
+            $query->where('customer_id', $request->customer_id);
+        }
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('date_of_supply', [$request->start_date, $request->end_date]);
+        }
+
+
+
         if ($request->ajax()) {
-            $data = Invoice::with('customer')->latest()->get();
-            return DataTables::of($data)
+            // $data = Invoice::with('customer')->latest()->get();
+            return DataTables::of($query)
                 ->addColumn('customer', fn($row) => $row->customer->name)
                 ->addColumn('action', function ($row) {
                     return '
@@ -43,9 +59,58 @@ class InvoiceController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
+         $customers = Customer::orderBy('name')->get();
 
-        return view('invoices.index');
+        return view('invoices.index', compact('customers'));
     }
+
+    public function exportExcel(Request $request)
+    {
+        $query = Invoice::with(['customer', 'items']);
+        
+        if ($request->filled('customer_id')) {
+            $query->where('customer_id', $request->customer_id);
+        }
+        if($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('date_of_supply', [$request->start_date, $request->end_date]);
+        }
+        
+        $invoices = $query->get();
+        return Excel::download(new InvoicesExport($invoices), 'filtered_invoices.xlsx');
+    }
+
+    public function exportPdf(Request $request)
+{
+    $query = Invoice::with(['customer', 'items']);
+
+    if ($request->filled('customer_id')) {
+            $query->where('customer_id', $request->customer_id);
+    }
+    if($request->filled('start_date') && $request->filled('end_date')) {
+        $query->whereBetween('date_of_supply', [$request->start_date, $request->end_date]);
+    }
+
+    $invoices = $query->get();
+
+    $customer = null;
+    if ($request->filled('customer_id')) {
+        $customer = \App\Models\Customer::find($request->customer_id)? \App\Models\Customer::find($request->customer_id)->name : 'All';
+    }
+
+    // Totals
+    $totals = [
+        'totalBeforeTax' => $invoices->sum(fn($i) => $i->items->sum('value_of_goods')),
+        'saleTax'        => $invoices->sum(fn($i) => $i->items->sum('amount_of_saleTax')),
+        'extraTax'       => $invoices->sum(fn($i) => $i->items->sum('extra_tax')),
+        'furtherTax'     => $invoices->sum(fn($i) => $i->items->sum('further_tax')),
+        'grandTotal'     => $invoices->sum(fn($i) => $i->items->sum('total')),
+    ];
+
+    $pdf = PDF::loadView('invoices.exports.export_pdf', compact('invoices', 'customer', 'totals', 'request'));
+
+    return $pdf->download('invoices.pdf');
+}
+
 
     public function create()
     {
@@ -69,6 +134,7 @@ class InvoiceController extends Controller
             'items.*.value_of_goods' => 'required|numeric',
             'items.*.sale_tax_rate' => 'required|numeric',
             'items.*.amount_of_saleTax' => 'required|numeric',
+            'items.*.extra_tax' => 'required|numeric',
             'items.*.further_tax' => 'required|numeric',
             'items.*.total' => 'required|numeric',
         ]);
@@ -124,6 +190,7 @@ class InvoiceController extends Controller
             'items.*.value_of_goods' => 'required|numeric',
             'items.*.sale_tax_rate' => 'required|numeric',
             'items.*.amount_of_saleTax' => 'required|numeric',
+            'items.*.extra_tax' => 'required|numeric',
             'items.*.further_tax' => 'required|numeric',
             'items.*.total' => 'required|numeric',
         ]);
@@ -178,7 +245,7 @@ class InvoiceController extends Controller
     }
 
     public function pdf(Invoice $invoice)
-    {
+    {   
         $invoice->load('customer', 'items.item');
         $pdf = PDF::loadView('invoices.print', compact('invoice'));
         return $pdf->download('invoice_' . $invoice->invoice_no . '.pdf');
